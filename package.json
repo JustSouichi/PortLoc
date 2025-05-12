@@ -1,0 +1,30 @@
+{
+  "name": "portloc",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm:dev:renderer\" \"npm:dev:electron\"",
+    "dev:renderer": "vite",
+    "dev:electron": "electron .",
+    "build:renderer": "vite build",
+    "build": "npm run build:renderer && electron-builder",
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "electron": "^25.9.8",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.4.1",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.6",
+    "vite": "^6.3.5"
+  }
+}
