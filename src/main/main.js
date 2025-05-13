@@ -5,6 +5,8 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { icon } = require('@fortawesome/fontawesome-svg-core');
 const { faHome } = require('@fortawesome/free-solid-svg-icons');
+const os = require('os');
+
 
 let tray = null;
 let store;                       // electron-store instance
@@ -18,6 +20,18 @@ async function initStore() {
   ipcMain.handle('services-load', () => {
     return store.get('services');
   });
+
+  ipcMain.handle('get-local-ip', () => {
+  const nets = os.networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === 'IPv4' && !net.internal) {
+        return net.address;
+      }
+    }
+  }
+  return 'localhost';
+});
 
   ipcMain.handle('services-save', (event, services) => {
     store.set('services', services);
