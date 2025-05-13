@@ -1,24 +1,61 @@
 {
   "name": "portloc",
   "version": "1.0.0",
+  "description": "PortLoc - GUI per gestire semplici server HTTP locali",
   "main": "src/main/main.js",
   "scripts": {
     "dev": "concurrently \"npm:dev:renderer\" \"npm:dev:electron\"",
     "dev:renderer": "vite",
     "dev:electron": "electron .",
     "build:renderer": "vite build",
-    "build": "npm run build:renderer && electron-builder",
-    "start": "electron ."
+    "build": "npm run build:renderer && npx electron-builder",
+    "start": "npm run build:renderer && electron ."
+  },
+  "build": {
+    "asar": false,
+    "productName": "PortLoc",
+    "appId": "com.tuonome.portloc",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "dist/renderer/**/*",
+      "src/main/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      "src/main/assets/**/*"
+    ],
+    "mac": {
+      "icon": "src/main/assets/icon.icns",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "icon": "src/main/assets/icon.ico",
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
+    "linux": {
+      "icon": "src/main/assets/png",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
-    "electron": "^25.9.8",
+    "electron-is-dev": "^3.0.1",
     "electron-store": "^10.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
@@ -28,6 +65,8 @@
     "@vitejs/plugin-react": "^4.4.1",
     "autoprefixer": "^10.4.21",
     "concurrently": "^9.1.2",
+    "electron": "^25.9.8",
+    "electron-builder": "^26.0.12",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.6",
     "vite": "^6.3.5"

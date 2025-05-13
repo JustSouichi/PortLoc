@@ -4,12 +4,7 @@ import './index.css';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faPlus,
-  faPlay,
-  faStop,
-  faEdit,
-  faTrash,
-  faCopy
+  faPlus, faPlay, faStop, faEdit, faTrash, faCopy
 } from '@fortawesome/free-solid-svg-icons';
 
 export default function App() {
@@ -19,13 +14,11 @@ export default function App() {
   const [editing, setEditing] = useState(null);
   const suggestedPort = 8080;
 
-  // Carica all'avvio servizi e IP locale
   useEffect(() => {
     window.api.loadServices().then(s => s && setServices(s));
     window.api.getLocalIp().then(ip => setLocalIp(ip));
   }, []);
 
-  // Salva servizi a ogni modifica
   useEffect(() => {
     window.api.saveServices(services);
   }, [services]);
@@ -34,10 +27,12 @@ export default function App() {
     if (editing) {
       setServices(prev => prev.map(s => s.id === svc.id ? { ...s, ...svc } : s));
     } else {
-      setServices(prev => [
-        ...prev,
-        { id: Date.now(), ...svc, status: 'stopped', pid: null }
-      ]);
+      setServices(prev => [...prev, {
+        id: Date.now(),
+        ...svc,
+        status: 'stopped',
+        pid: null
+      }]);
     }
     setEditing(null);
   };
@@ -46,7 +41,6 @@ export default function App() {
     const { pid, status } = await window.api.startService(svc);
     setServices(prev => prev.map(s => s.id === svc.id ? { ...s, pid, status } : s));
   };
-
   const handleStop = async svc => {
     const { status } = await window.api.stopService(svc.pid);
     setServices(prev => prev.map(s => s.id === svc.id ? { ...s, pid: null, status } : s));
@@ -56,7 +50,6 @@ export default function App() {
     if (svc.pid) window.api.stopService(svc.pid);
     setServices(prev => prev.filter(s => s.id !== svc.id));
   };
-
   const handleEdit = svc => {
     setEditing(svc);
     setModalOpen(true);
@@ -72,8 +65,7 @@ export default function App() {
         className="mb-4 px-4 py-2 bg-white text-sky-500 rounded flex items-center space-x-2"
         onClick={() => { setEditing(null); setModalOpen(true); }}
       >
-        <FontAwesomeIcon icon={faPlus} />
-        <span>Add Service</span>
+        <FontAwesomeIcon icon={faPlus} /><span>Add Service</span>
       </button>
 
       <AddServiceModal
@@ -100,7 +92,7 @@ export default function App() {
           <tbody>
             {services.map(s => {
               const localhostUrl = `http://localhost:${s.port}`;
-              const lanUrl = `http://${localIp}:${s.port}`;
+              const lanUrl       = `http://${localIp}:${s.port}`;
               return (
                 <tr key={s.id}>
                   <td className="border px-4 py-2">{s.title}</td>
@@ -120,9 +112,9 @@ export default function App() {
                         type="button"
                         onClick={() => copyToClipboard(localhostUrl)}
                         className="text-gray-600 hover:text-gray-800"
-                        title="Copy localhost"
+                        title="Copy"
                       >
-                        <FontAwesomeIcon icon={faCopy} />
+                        <FontAwesomeIcon icon={faCopy}/>
                       </button>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -137,9 +129,9 @@ export default function App() {
                         type="button"
                         onClick={() => copyToClipboard(lanUrl)}
                         className="text-gray-600 hover:text-gray-800"
-                        title="Copy LAN"
+                        title="Copy"
                       >
-                        <FontAwesomeIcon icon={faCopy} />
+                        <FontAwesomeIcon icon={faCopy}/>
                       </button>
                     </div>
                   </td>
@@ -150,7 +142,7 @@ export default function App() {
                         onClick={() => handleStart(s)}
                         title="Start"
                       >
-                        <FontAwesomeIcon icon={faPlay} />
+                        <FontAwesomeIcon icon={faPlay}/>
                       </button>
                     ) : (
                       <button
@@ -158,7 +150,7 @@ export default function App() {
                         onClick={() => handleStop(s)}
                         title="Stop"
                       >
-                        <FontAwesomeIcon icon={faStop} />
+                        <FontAwesomeIcon icon={faStop}/>
                       </button>
                     )}
                     <button
@@ -166,14 +158,14 @@ export default function App() {
                       onClick={() => handleEdit(s)}
                       title="Edit"
                     >
-                      <FontAwesomeIcon icon={faEdit} />
+                      <FontAwesomeIcon icon={faEdit}/>
                     </button>
                     <button
                       className="px-2 py-1 bg-gray-300 text-black rounded"
                       onClick={() => handleDelete(s)}
                       title="Delete"
                     >
-                      <FontAwesomeIcon icon={faTrash} />
+                      <FontAwesomeIcon icon={faTrash}/>
                     </button>
                   </td>
                 </tr>

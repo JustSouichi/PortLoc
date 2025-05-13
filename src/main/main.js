@@ -1,73 +1,66 @@
+// src/main/main.js
+
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
-const path = require('path');
+const path   = require('path');
+const fs     = require('fs');
 const { spawn } = require('child_process');
-const os = require('os');
+const os     = require('os');
 
-let store;                    // verrà inizializzato in initStore()
-const servicesMap = new Map(); // mappa pid → processo child
+let store;
+const servicesMap = new Map();
 
-// 1) Inizializza electron-store via dynamic import
+// 1) init electron-store dinamico
 async function initStore() {
   const { default: Store } = await import('electron-store');
   store = new Store({ defaults: { services: [] } });
 }
 
-// 2) Crea la finestra principale
+// 2) crea window
 function createWindow() {
   const win = new BrowserWindow({
     width: 900,
     height: 600,
+    icon: path.join(__dirname, 'assets', 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false
+      contextIsolation: true
     }
   });
 
-  if (app.isPackaged) {
-    win.loadFile(path.join(__dirname, '../../dist/renderer/index.html'));
+  // path al build React
+  const indexHtml = path.join(__dirname, '../../dist/renderer/index.html');
+  if (app.isPackaged || fs.existsSync(indexHtml)) {
+    console.log('▶️ Loading prod index.html from:', indexHtml);
+    win.loadFile(indexHtml);
   } else {
+    console.log('▶️ Dev mode, loading http://localhost:5173');
     win.loadURL('http://localhost:5173');
+    win.webContents.openDevTools();
   }
 
   return win;
 }
 
-// 3) Al ready, init store e crea la finestra
 app.whenReady().then(async () => {
   await initStore();
   createWindow();
 });
 
 // ——— IPC HANDLERS ———
-
-// Persistenza servizi
-ipcMain.handle('services-load', () => store.get('services'));
-ipcMain.handle('services-save', (evt, services) => {
-  store.set('services', services);
-  return true;
-});
-
-// Dialog selezione cartella
+ipcMain.handle('services-load',    ()   => store.get('services'));
+ipcMain.handle('services-save',    (e, s) => { store.set('services', s); return true; });
 ipcMain.handle('dialog:open-folder', async () => {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
-    properties: ['openDirectory']
-  });
+  const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openDirectory'] });
   return canceled ? null : filePaths[0];
 });
-
-// Avvio HTTP-server
-ipcMain.handle('service-start', (evt, svc) => {
+ipcMain.handle('service-start', (e, svc) => {
   const child = spawn('npx', ['http-server', svc.folder, '-p', String(svc.port)], {
-    shell: true,
-    stdio: 'ignore'
+    shell: true, stdio: 'ignore'
   });
   servicesMap.set(child.pid, child);
   return { pid: child.pid, status: 'running' };
 });
-
-// Stop HTTP-server
-ipcMain.handle('service-stop', (evt, pid) => {
+ipcMain.handle('service-stop', (e, pid) => {
   const child = servicesMap.get(pid);
   if (child) {
     child.kill();
@@ -76,22 +69,16 @@ ipcMain.handle('service-stop', (evt, pid) => {
   }
   return { pid, status: 'unknown' };
 });
-
-// Recupera IP di rete locale
 ipcMain.handle('get-local-ip', () => {
   const nets = os.networkInterfaces();
   for (const name of Object.keys(nets)) {
     for (const net of nets[name]) {
-      if (net.family === 'IPv4' && !net.internal) {
-        return net.address;
-      }
+      if (net.family === 'IPv4' && !net.internal) return net.address;
     }
   }
   return 'localhost';
 });
-
-// Apri URL nel browser di default
-ipcMain.handle('open-url', (evt, url) => {
+ipcMain.handle('open-url', (e, url) => {
   shell.openExternal(url);
   return true;
 });
