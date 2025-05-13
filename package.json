@@ -16,6 +16,7 @@
   "description": "",
   "dependencies": {
     "electron": "^25.9.8",
+    "electron-store": "^10.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

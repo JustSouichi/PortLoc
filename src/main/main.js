@@ -2,8 +2,24 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 
-// Mappa per tenere in memoria i processi avviati
-const servicesMap = new Map();
+let store;                  // Will hold our Electron Store instance
+const servicesMap = new Map();  // Track child processes by PID
+
+async function initStore() {
+  // Dynamically import the ESM-only module
+  const { default: Store } = await import('electron-store');
+  store = new Store({ defaults: { services: [] } });
+
+  // Register IPC handlers for persistence
+  ipcMain.handle('services-load', () => {
+    return store.get('services');
+  });
+
+  ipcMain.handle('services-save', (event, services) => {
+    store.set('services', services);
+    return true;
+  });
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -22,11 +38,12 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  await initStore();    // Initialize store before anything else
+  createWindow();
+});
 
-// --- IPC HANDLERS ---
-
-// 1) dialog:open-folder (selezione cartella)
+// IPC: open folder picker
 ipcMain.handle('dialog:open-folder', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog({
     properties: ['openDirectory']
@@ -34,8 +51,9 @@ ipcMain.handle('dialog:open-folder', async () => {
   return canceled ? null : filePaths[0];
 });
 
-// 2) service-start (avvio http-server)
+// IPC: start a local HTTP server
 ipcMain.handle('service-start', (event, svc) => {
+  // svc = { id, title, folder, port }
   const child = spawn('npx', ['http-server', svc.folder, '-p', String(svc.port)], {
     shell: true,
     stdio: 'ignore'
@@ -44,7 +62,7 @@ ipcMain.handle('service-start', (event, svc) => {
   return { pid: child.pid, status: 'running' };
 });
 
-// 3) service-stop (chiusura processo)
+// IPC: stop a running server
 ipcMain.handle('service-stop', (event, pid) => {
   const child = servicesMap.get(pid);
   if (child) {
@@ -56,5 +74,7 @@ ipcMain.handle('service-stop', (event, pid) => {
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
 });
