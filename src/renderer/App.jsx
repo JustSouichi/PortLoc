@@ -5,6 +5,15 @@ import './index.css';
 export default function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [services, setServices] = useState([]);
+    const [editing, setEditing] = useState(null); 
+  // editing: null o il service da modificare
+
+  // apri il modale in edit mode
+  const handleEdit = svc => {
+    setEditing(svc);
+    setModalOpen(true);
+  };
+
   const suggestedPort = 8080;
 
   // 1) Carica all’avvio
@@ -37,6 +46,16 @@ export default function App() {
       prev.map(s => (s.id === svc.id ? { ...s, pid: null, status: result.status } : s))
     );
   };
+
+    // Rimuovi un servizio dalla lista
+  const handleDelete = svc => {
+    // Se il servizio è in esecuzione, fermalo prima
+    if (svc.pid) {
+      window.api.stopService(svc.pid);
+    }
+    setServices(prev => prev.filter(s => s.id !== svc.id));
+  };
+
 
   return (
     <div className="p-6">
@@ -87,6 +106,13 @@ export default function App() {
                       Stop
                     </button>
                   )}
+                  {/* DELETE */}
+    <button
+    className="px-2 py-1 bg-gray-300 text-black rounded hover:bg-gray-400"
+    onClick={() => handleDelete(s)}
+  >
+    Delete
+  </button>
                 </td>
               </tr>
             ))}
