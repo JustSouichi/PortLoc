@@ -1,5 +1,3 @@
-// src/renderer/App.jsx
-
 import React, { useState, useEffect } from 'react';
 import AddServiceModal from './components/AddServiceModal';
 import './index.css';
@@ -15,28 +13,26 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 export default function App() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
   const [services, setServices] = useState([]);
   const [localIp, setLocalIp] = useState('localhost');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
   const suggestedPort = 8080;
 
-  // Carica servizi e IP LAN
+  // Carica all'avvio servizi e IP locale
   useEffect(() => {
-    window.api.loadServices().then(saved => saved && setServices(saved));
+    window.api.loadServices().then(s => s && setServices(s));
     window.api.getLocalIp().then(ip => setLocalIp(ip));
   }, []);
 
-  // Persisti servizi
+  // Salva servizi a ogni modifica
   useEffect(() => {
     window.api.saveServices(services);
   }, [services]);
 
   const handleSave = svc => {
     if (editing) {
-      setServices(prev =>
-        prev.map(s => (s.id === svc.id ? { ...s, ...svc } : s))
-      );
+      setServices(prev => prev.map(s => s.id === svc.id ? { ...s, ...svc } : s));
     } else {
       setServices(prev => [
         ...prev,
@@ -48,27 +44,26 @@ export default function App() {
 
   const handleStart = async svc => {
     const { pid, status } = await window.api.startService(svc);
-    setServices(prev =>
-      prev.map(s => (s.id === svc.id ? { ...s, pid, status } : s))
-    );
+    setServices(prev => prev.map(s => s.id === svc.id ? { ...s, pid, status } : s));
   };
+
   const handleStop = async svc => {
     const { status } = await window.api.stopService(svc.pid);
-    setServices(prev =>
-      prev.map(s => (s.id === svc.id ? { ...s, pid: null, status } : s))
-    );
+    setServices(prev => prev.map(s => s.id === svc.id ? { ...s, pid: null, status } : s));
   };
+
   const handleDelete = svc => {
     if (svc.pid) window.api.stopService(svc.pid);
     setServices(prev => prev.filter(s => s.id !== svc.id));
   };
+
   const handleEdit = svc => {
     setEditing(svc);
     setModalOpen(true);
   };
 
-  const copyToClipboard = text => navigator.clipboard.writeText(text);
-  const openInBrowser = url => window.api.openExternal(url);
+  const openLink = url => window.api.openUrl(url);
+  const copyToClipboard = txt => navigator.clipboard.writeText(txt);
 
   return (
     <div className="p-6">
@@ -105,44 +100,49 @@ export default function App() {
           <tbody>
             {services.map(s => {
               const localhostUrl = `http://localhost:${s.port}`;
-              const lanUrl = `http://${localIp}:${s.port}`; // <–– qui usa l'IP effettivo
-
+              const lanUrl = `http://${localIp}:${s.port}`;
               return (
                 <tr key={s.id}>
                   <td className="border px-4 py-2">{s.title}</td>
                   <td className="border px-4 py-2">{s.port}</td>
-                  <td className="border px-4 py-2">
-                    {s.folder.split(/[\\/]/).pop()}
-                  </td>
+                  <td className="border px-4 py-2">{s.folder.split(/[\\/]/).pop()}</td>
                   <td className="border px-4 py-2">{s.status}</td>
-
-                  {/* LINKS */}
                   <td className="border px-4 py-2 space-y-1">
                     <div className="flex items-center space-x-2">
-                      <span className="text-blue-600 underline">
+                      <a
+                        href="#"
+                        onClick={e => { e.preventDefault(); openLink(localhostUrl); }}
+                        className="text-blue-600 underline cursor-pointer"
+                      >
                         {localhostUrl}
-                      </span>
-                      <button onClick={() => openInBrowser(localhostUrl)} title="Open localhost">
-                        🔗
-                      </button>
-                      <button onClick={() => copyToClipboard(localhostUrl)} title="Copy localhost">
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(localhostUrl)}
+                        className="text-gray-600 hover:text-gray-800"
+                        title="Copy localhost"
+                      >
                         <FontAwesomeIcon icon={faCopy} />
                       </button>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-blue-600 underline">
+                      <a
+                        href="#"
+                        onClick={e => { e.preventDefault(); openLink(lanUrl); }}
+                        className="text-blue-600 underline cursor-pointer"
+                      >
                         {lanUrl}
-                      </span>
-                      <button onClick={() => openInBrowser(lanUrl)} title="Open LAN">
-                        🔗
-                      </button>
-                      <button onClick={() => copyToClipboard(lanUrl)} title="Copy LAN">
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(lanUrl)}
+                        className="text-gray-600 hover:text-gray-800"
+                        title="Copy LAN"
+                      >
                         <FontAwesomeIcon icon={faCopy} />
                       </button>
                     </div>
                   </td>
-
-                  {/* ACTIONS */}
                   <td className="border px-4 py-2 flex space-x-2">
                     {s.status === 'stopped' ? (
                       <button
