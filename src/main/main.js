@@ -5,6 +5,7 @@ const path   = require('path');
 const fs     = require('fs');
 const { spawn } = require('child_process');
 const os     = require('os');
+const { createServer } = require('http-server');
 
 let store;
 const servicesMap = new Map();
@@ -53,17 +54,18 @@ ipcMain.handle('dialog:open-folder', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openDirectory'] });
   return canceled ? null : filePaths[0];
 });
-ipcMain.handle('service-start', (e, svc) => {
-  const child = spawn('npx', ['http-server', svc.folder, '-p', String(svc.port)], {
-    shell: true, stdio: 'ignore'
-  });
-  servicesMap.set(child.pid, child);
-  return { pid: child.pid, status: 'running' };
+ipcMain.handle('service-start', async (event, svc) => {
+  // Crea un server che serve `svc.folder`
+  const server = createServer({ root: svc.folder, silent: true });
+  await new Promise((res, rej) => server.listen(svc.port, err => err ? rej(err) : res()));
+  // Usa l'id del servizio come chiave
+  servicesMap.set(svc.id, server);
+  return { pid: svc.id, status: 'running' };
 });
-ipcMain.handle('service-stop', (e, pid) => {
-  const child = servicesMap.get(pid);
-  if (child) {
-    child.kill();
+ipcMain.handle('service-stop', (event, pid) => {
+  const server = servicesMap.get(pid);
+  if (server) {
+    server.close();
     servicesMap.delete(pid);
     return { pid, status: 'stopped' };
   }
