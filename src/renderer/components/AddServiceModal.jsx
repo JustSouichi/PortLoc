@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-export default function AddServiceModal({ isOpen, onClose, onSave, suggestedPort }) {
-  const [title, setTitle] = useState('');
-  const [folder, setFolder] = useState('');
-  const [port, setPort] = useState(suggestedPort);
-  const [useSuggested, setUseSuggested] = useState(true);
+export default function AddServiceModal({ isOpen, onClose, onSave, suggestedPort, initial = null }) {
+const [title, setTitle] = useState(initial?.title || '');
+  const [folder, setFolder] = useState(initial?.folder || '');
+  const [port, setPort] = useState(initial?.port || suggestedPort);
+  const [useSuggested, setUseSuggested] = useState(!initial);
 
   // Apri il dialog di sistema per scegliere la cartella
   const pickFolder = async () => {
@@ -16,14 +16,19 @@ export default function AddServiceModal({ isOpen, onClose, onSave, suggestedPort
 
   // Quando confermiamo, invochiamo onSave e resettiamo
   const handleSubmit = () => {
-    onSave({ title, folder, port });
+    onSave({ ...initial, title, folder, port });
     // reset
-    setTitle('');
-    setFolder('');
-    setPort(suggestedPort);
-    setUseSuggested(true);
+    setTitle(''); setFolder(''); setPort(suggestedPort); setUseSuggested(true);
     onClose();
   };
+
+  useEffect(() => {
+  setTitle(initial?.title || '');
+  setFolder(initial?.folder || '');
+  setPort(initial?.port || suggestedPort);
+  setUseSuggested(!initial);
+}, [initial]);
+
 
   if (!isOpen) return null;
 

@@ -67,11 +67,23 @@ export default function App() {
         + Add Service
       </button>
       <AddServiceModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleSave}
-        suggestedPort={suggestedPort}
-      />
+  isOpen={modalOpen}
+  onClose={() => { setModalOpen(false); setEditing(null); }}
+  onSave={ svc => {
+    if (editing) {
+      // modifica
+      setServices(prev =>
+        prev.map(s => (s.id === svc.id ? { ...s, ...svc } : s))
+      );
+    } else {
+      handleSave(svc);
+    }
+    setEditing(null);
+  }}
+  suggestedPort={suggestedPort}
+  initial={editing}
+/>
+
       {services.length > 0 && (
         <table className="w-full bg-white rounded shadow overflow-hidden">
           <thead>
@@ -106,6 +118,10 @@ export default function App() {
                       Stop
                     </button>
                   )}
+                  <button
+    className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500"
+    onClick={() => handleEdit(s)}
+  >Edit</button>
                   {/* DELETE */}
     <button
     className="px-2 py-1 bg-gray-300 text-black rounded hover:bg-gray-400"
@@ -113,6 +129,7 @@ export default function App() {
   >
     Delete
   </button>
+   
                 </td>
               </tr>
             ))}
