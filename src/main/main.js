@@ -54,23 +54,39 @@ ipcMain.handle('dialog:open-folder', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openDirectory'] });
   return canceled ? null : filePaths[0];
 });
-ipcMain.handle('service-start', async (event, svc) => {
-  // Crea un server che serve `svc.folder`
+// service-start: restituisco { id, status }
+ipcMain.handle('service-start', async (_, svc) => {
   const server = createServer({ root: svc.folder, silent: true });
-  await new Promise((res, rej) => server.listen(svc.port, err => err ? rej(err) : res()));
-  // Usa l'id del servizio come chiave
+  await new Promise(r => server.listen(svc.port, r));
   servicesMap.set(svc.id, server);
-  return { pid: svc.id, status: 'running' };
+  return { id: svc.id, status: 'running' };
 });
-ipcMain.handle('service-stop', (event, pid) => {
-  const server = servicesMap.get(pid);
+
+// main.js
+
+ipcMain.handle('service-stop', async (_, id) => {
+  // assicuriamoci che la chiave sia un numero
+  const key = typeof id === 'string' ? parseInt(id, 10) : id;
+  const server = servicesMap.get(key);
+
   if (server) {
-    server.close();
-    servicesMap.delete(pid);
-    return { pid, status: 'stopped' };
+    // avvolgiamo close() in una Promise per attendere la chiusura
+    await new Promise(resolve => {
+      server.close(() => {
+        servicesMap.delete(key);
+        console.log(`✅ Server ${key} chiuso correttamente`);
+        resolve();
+      });
+    });
+
+    return { id: key, status: 'stopped' };
+  } else {
+    console.warn(`⚠️ Nessun server trovato con id ${key}`);
+    return { id: key, status: 'unknown' };
   }
-  return { pid, status: 'unknown' };
 });
+
+
 ipcMain.handle('get-local-ip', () => {
   const nets = os.networkInterfaces();
   for (const name of Object.keys(nets)) {
