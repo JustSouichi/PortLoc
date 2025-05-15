@@ -39,6 +39,27 @@ It remembers your services between launches so you don’t have to reconfigure e
 > _Add screenshots or a short GIF here to showcase the UI and workflow._
 
 ## Installation
+```
+
+git clone https://github.com/SonoTommy/PortLoc
+
+cd PortLoc
+
+npm install
+```
+
+### 🔽 Pre-built Installers
+
+You can download the official pre-built release of **PortLoc 1.0.0** for:
+
+- 🪟 **Windows** (`.exe` installer)  
+- 🍎 **macOS (ARM - Apple Silicon)**  
+- 🐧 **Ubuntu (64-bit)**  
+
+👉 [**Download PortLoc 1.0.0 from GitHub Releases**](https://github.com/SonoTommy/PortLoc/releases/tag/1.0.0)
+
+> No build required — just download and run!
+
 
 ### Prerequisites
 
