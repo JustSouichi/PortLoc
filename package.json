@@ -46,6 +46,7 @@
     },
     "linux": {
       "icon": "src/main/assets/png",
+      "maintainer": "SonoTommy <tuo-indirizzo@example.com>",
       "target": [
         "AppImage",
         "deb"
@@ -76,6 +77,7 @@
 ],
   "author": {
     "name": "SonoTommy",
+    "email": "tommasobertocchideveloper04@gmail.com",
     "url": "https://github.com/SonoTommy"
   },
   "license": "ISC",
