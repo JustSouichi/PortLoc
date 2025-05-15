@@ -134,7 +134,7 @@ export default function AddServiceModal({
   onSave,
   suggestedPort,
   initial = null,
-  existingPorts = []  // receive list of used ports
+  existingPorts = []
 }) {
   const [title, setTitle] = useState(initial?.title || '');
   const [folder, setFolder] = useState(initial?.folder || '');
@@ -142,7 +142,6 @@ export default function AddServiceModal({
   const [useSuggested, setUseSuggested] = useState(!initial);
   const [error, setError] = useState('');
 
-  // Reinitialize when modal opens or suggested changes
   useEffect(() => {
     setTitle(initial?.title || '');
     setFolder(initial?.folder || '');
@@ -157,16 +156,15 @@ export default function AddServiceModal({
   };
 
   const handleSubmit = () => {
-    // Validate port uniqueness
-    const portToCheck = useSuggested ? suggestedPort : port;
+    const chosenPort = useSuggested ? suggestedPort : port;
     const conflict = existingPorts
       .filter(p => p !== initial?.port)
-      .includes(portToCheck);
+      .includes(chosenPort);
     if (conflict) {
-      setError(`Port ${portToCheck} is already in use.`);
+      setError(`Port ${chosenPort} is already in use.`);
       return;
     }
-    onSave({ ...initial, title, folder, port: portToCheck });
+    onSave({ ...initial, title, folder, port: chosenPort });
     onClose();
   };
 
@@ -174,12 +172,13 @@ export default function AddServiceModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl w-80 p-6 shadow-lg transition-colors">
+      {/* Increased modal width for wider inputs */}
+      <div className="bg-white rounded-xl w-96 p-6 shadow-lg transition-colors">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">
           {initial ? 'Edit Service' : 'Add Service'}
         </h2>
         <div className="space-y-4">
-          {/* Title */}
+          {/* Title Field */}
           <div>
             <label className="block text-gray-700 mb-1">Title</label>
             <input
@@ -191,7 +190,7 @@ export default function AddServiceModal({
             />
           </div>
 
-          {/* Folder picker */}
+          {/* Folder Picker */}
           <div>
             <label className="block text-gray-700 mb-1">Folder</label>
             <div className="flex">
@@ -212,17 +211,22 @@ export default function AddServiceModal({
             </div>
           </div>
 
-          {/* Port + suggested */}
+          {/* Port Selector */}
           <div className="flex items-center space-x-4">
+            <label className="block text-gray-700 mb-1">Port</label>
             <div className="flex-1">
-              <label className="block text-gray-700 mb-1">Port</label>
-              <input
-                type="number"
-                value={port}
-                disabled={useSuggested}
-                onChange={e => setPort(Number(e.target.value))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
-              />
+              {!useSuggested ? (
+                <input
+                  type="number"
+                  value={port}
+                  onChange={e => setPort(Number(e.target.value))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              ) : (
+                <div className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 text-gray-600">
+                  {suggestedPort}
+                </div>
+              )}
             </div>
             <label className="flex items-center space-x-2 text-gray-600">
               <input
@@ -234,6 +238,7 @@ export default function AddServiceModal({
               <span>Use suggested</span>
             </label>
           </div>
+
           {error && <div className="text-red-500 text-sm">{error}</div>}
         </div>
 
