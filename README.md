@@ -36,7 +36,8 @@ It remembers your services between launches so you don’t have to reconfigure e
 
 ## Demo
 
-> _Add screenshots or a short GIF here to showcase the UI and workflow._
+![first_image](./first_image.png)
+![second_image](./second_image.png)
 
 ## Installation
 ```
