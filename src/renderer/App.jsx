@@ -17,7 +17,6 @@ export default function App() {
   useEffect(() => {
     //window.api.loadServices().then(s => s && setServices(s));
     
-    /* TEST */
 
    window.api.loadServices().then(s => {
      if (s) {
@@ -34,30 +33,16 @@ export default function App() {
      }
 
     })
-    /* END TEST */
     
     window.api.getLocalIp().then(ip => setLocalIp(ip));
   }, []);
-/*
-  useEffect(() => {
-    window.api.saveServices(services);
-  }, [services]);*/
+
 
     const persist = arr => arr.map(({id, title, port, folder}) => ({id, title, port, folder}));
 
 
   const handleSave = svc => {
-    /*if (editing) {
-      setServices(prev => prev.map(s => s.id === svc.id ? { ...s, ...svc } : s));
-    } else {
-      setServices(prev => [...prev, {
-        id: Date.now(),
-        ...svc,
-        status: 'stopped',
-        pid: null
-      }]);
-    }
-    setEditing(null);*/
+   
      let updated;
     if (editing) {
       updated = services.map(s => s.id === svc.id ? { ...s, ...svc } : s);
@@ -85,7 +70,6 @@ export default function App() {
 
   const handleDelete = svc => {
     if (svc.pid) window.api.stopService(svc.pid);
-   /* setServices(prev => prev.filter(s => s.id !== svc.id)); */
 
    const updated = services.filter(s => s.id !== svc.id);
     setServices(updated);

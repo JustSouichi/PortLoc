@@ -141,7 +141,6 @@ ipcMain.handle('open-url', (e, url) => {
 });
 
 
-/* TEST */
 
   // Blocca qui tutti i server prima del quit
   app.on('before-quit', () => {
@@ -160,7 +159,6 @@ ipcMain.handle('open-url', (e, url) => {
   });
 
 
-/* END TEST */
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
