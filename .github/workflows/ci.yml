@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30               # ensure long builds don’t get auto-canceled :contentReference[oaicite:2]{index=2}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -18,31 +19,47 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js & cache
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'                     # built-in caching for npm
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build & package for macOS
+      - name: Build renderer
+        run: npm run build:renderer
+
+      - name: Package for macOS
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
-          npm run build:renderer
           npx electron-builder \
             --mac \
             --arm64 \
-            --config.mac.identity=null
+            --config.mac.identity=null \
+            --publish never
         env:
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
 
-      - name: Build on Linux & Windows
-        if: matrix.os != 'macos-latest'
-        run: npm run build
+      - name: Package AppImage for Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          # explicitly build AppImage only to skip .deb/fpm races
+          npx electron-builder \
+            --linux AppImage \
+            --x64 \
+            --publish never
+
+      - name: Package for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          npx electron-builder \
+            --win \
+            --x64 \
+            --publish never
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
