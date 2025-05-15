@@ -46,6 +46,8 @@ git clone https://github.com/SonoTommy/PortLoc
 cd PortLoc
 
 npm install
+
+npm run start
 ```
 
 ### 🔽 Pre-built Installers
