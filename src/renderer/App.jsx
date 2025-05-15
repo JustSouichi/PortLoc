@@ -15,16 +15,39 @@ export default function App() {
   const suggestedPort = 8080;
 
   useEffect(() => {
-    window.api.loadServices().then(s => s && setServices(s));
+    //window.api.loadServices().then(s => s && setServices(s));
+    
+    /* TEST */
+
+   window.api.loadServices().then(s => {
+     if (s) {
+       // Riporta tutti i servizi a stopped/idle allo startup
+       const resetServices = s.map(svc => ({
+         ...svc,
+         status: 'stopped',
+         pid: null
+      }));
+       setServices(resetServices);
+       // (opzionale) risalva subito, in modo che in store
+       // non rimangano status errati
+      window.api.saveServices(resetServices);
+     }
+
+    })
+    /* END TEST */
+    
     window.api.getLocalIp().then(ip => setLocalIp(ip));
   }, []);
-
+/*
   useEffect(() => {
     window.api.saveServices(services);
-  }, [services]);
+  }, [services]);*/
+
+    const persist = arr => arr.map(({id, title, port, folder}) => ({id, title, port, folder}));
+
 
   const handleSave = svc => {
-    if (editing) {
+    /*if (editing) {
       setServices(prev => prev.map(s => s.id === svc.id ? { ...s, ...svc } : s));
     } else {
       setServices(prev => [...prev, {
@@ -34,7 +57,21 @@ export default function App() {
         pid: null
       }]);
     }
+    setEditing(null);*/
+     let updated;
+    if (editing) {
+      updated = services.map(s => s.id === svc.id ? { ...s, ...svc } : s);
+    } else {
+     updated = [
+        ...services,
+       { id: Date.now(), ...svc, status: 'stopped', pid: null }
+      ];
+    }
+    setServices(updated);
+    // salvo sul disco SOLO i campi statici
+    window.api.saveServices(persist(updated));
     setEditing(null);
+    setModalOpen(false);
   };
 
   const handleStart = async svc => {
@@ -48,7 +85,11 @@ export default function App() {
 
   const handleDelete = svc => {
     if (svc.pid) window.api.stopService(svc.pid);
-    setServices(prev => prev.filter(s => s.id !== svc.id));
+   /* setServices(prev => prev.filter(s => s.id !== svc.id)); */
+
+   const updated = services.filter(s => s.id !== svc.id);
+    setServices(updated);
+    window.api.saveServices(persist(updated));
   };
   const handleEdit = svc => {
     setEditing(svc);

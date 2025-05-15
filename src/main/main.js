@@ -1,3 +1,4 @@
+
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path   = require('path');
 const fs     = require('fs');
@@ -8,6 +9,7 @@ const serveHandler = require('serve-handler');
 let store;
 const servicesMap = new Map();
 const socketMap   = new Map(); // mappa pid → Set di socket
+
 
 // 1) init electron-store dinamico
 async function initStore() {
@@ -47,7 +49,24 @@ app.whenReady().then(async () => {
 });
 
 // ——— IPC HANDLERS ———
-ipcMain.handle('services-load',    ()   => store.get('services'));
+//ipcMain.handle('services-load',    ()   => store.get('services'));
+
+ ipcMain.handle('services-load', () => {
+   // Carica dalla store, oppure[]
+   const stored = store.get('services') || [];
+   // Tieni solo i campi statici
+   const staticOnly = stored.map(({id, title, port, folder}) => ({id, title, port, folder}));
+   // Sovrascrivi la store con soli campi statici (così non rimane mai status/pid)
+   store.set('services', staticOnly);
+   // Ritorna gli stessi oggetti + status:stopped e pid:null
+   return staticOnly.map(svc => ({
+    ...svc,
+    status:  'stopped',
+    pid:     null
+   }));
+ });
+
+
 ipcMain.handle('services-save',    (e, s) => { store.set('services', s); return true; });
 ipcMain.handle('dialog:open-folder', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openDirectory'] });
@@ -121,8 +140,34 @@ ipcMain.handle('open-url', (e, url) => {
   return true;
 });
 
+
+/* TEST */
+
+  // Blocca qui tutti i server prima del quit
+  app.on('before-quit', () => {
+    for (const [id, server] of servicesMap) {
+      const sockets = socketMap.get(id);
+      if (sockets) {
+        for (const sock of sockets) sock.destroy();
+      }
+      server.close(err => {
+        if (err) console.error(`Errore chiusura server ${id}:`, err);
+        else console.log(`Server ${id} chiuso all'uscita.`);
+      });
+    }
+   servicesMap.clear();
+    socketMap.clear();
+  });
+
+
+/* END TEST */
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
+
+
+
+
 
 
