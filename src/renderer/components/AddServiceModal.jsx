@@ -9,15 +9,17 @@ export default function AddServiceModal({
   suggestedPort,
   initial = null
 }) {
-  const [title,  setTitle]  = useState(initial?.title  || '');
+  const [title, setTitle] = useState(initial?.title || '');
   const [folder, setFolder] = useState(initial?.folder || '');
-  const [port,   setPort]   = useState(initial?.port   || suggestedPort);
+  const [port, setPort] = useState(initial?.port || suggestedPort);
   const [useSuggested, setUseSuggested] = useState(!initial);
 
+  // Whenever `initial` or `suggestedPort` changes (i.e. opening modal),
+  // reinitialize local state
   useEffect(() => {
-    setTitle(initial?.title  || '');
+    setTitle(initial?.title || '');
     setFolder(initial?.folder || '');
-    setPort(initial?.port     || suggestedPort);
+    setPort(initial?.port || suggestedPort);
     setUseSuggested(!initial);
   }, [initial, suggestedPort]);
 
@@ -35,30 +37,33 @@ export default function AddServiceModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-xl w-80 p-6 shadow-lg transition-colors">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
+      <div className="bg-white rounded-xl w-80 p-6 shadow-lg transition-colors">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">
           {initial ? 'Edit Service' : 'Add Service'}
         </h2>
         <div className="space-y-4">
+          {/* Title */}
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-1">Title</label>
+            <label className="block text-gray-700 mb-1">Title</label>
             <input
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="My Local Site"
-              className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
+
+          {/* Folder picker */}
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-1">Folder</label>
+            <label className="block text-gray-700 mb-1">Folder</label>
             <div className="flex">
               <input
                 type="text"
                 value={folder}
                 readOnly
                 placeholder="Select folder..."
-                className="flex-1 border border-gray-300 dark:border-gray-700 rounded-l-lg px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                className="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 bg-gray-100"
               />
               <button
                 onClick={pickFolder}
@@ -69,18 +74,20 @@ export default function AddServiceModal({
               </button>
             </div>
           </div>
+
+          {/* Port + suggested */}
           <div className="flex items-center space-x-4">
             <div className="flex-1">
-              <label className="block text-gray-700 dark:text-gray-300 mb-1">Port</label>
+              <label className="block text-gray-700 mb-1">Port</label>
               <input
                 type="number"
                 value={port}
                 disabled={useSuggested}
                 onChange={e => setPort(Number(e.target.value))}
-                className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 disabled:bg-gray-100 dark:disabled:bg-gray-600"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
               />
             </div>
-            <label className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+            <label className="flex items-center space-x-2 text-gray-600">
               <input
                 type="checkbox"
                 checked={useSuggested}
@@ -91,10 +98,12 @@ export default function AddServiceModal({
             </label>
           </div>
         </div>
+
+        {/* Actions */}
         <div className="mt-6 flex justify-end space-x-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
           >
             Cancel
           </button>
