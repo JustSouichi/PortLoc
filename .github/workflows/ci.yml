@@ -36,12 +36,12 @@ jobs:
 
       - name: Build renderer (Vite)
         run: npm run build:renderer
-        
+
       - name: Package with Electron Builder
         run: |
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
             # build macOS arm64 senza firma
-            npm run build:renderer && npx electron-builder --mac --arm64 --skip-sign
+            npm run build:renderer && npx electron-builder --mac --arm64 --config.mac.identity=null
           else
             npm run build
           fi
