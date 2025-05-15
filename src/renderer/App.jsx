@@ -233,10 +233,10 @@ export default function App() {
 
       {/* Footer with copyright */}
       <footer className="mt-6 text-center text-gray-600">
-        <p>&copy; JustSouichi 2025 <a href="#" 
-                          onClick={e => { e.preventDefault(); window.api.openUrl("https://github.com/JustSouichi/PortLoc"); }} target="_blank" rel="noopener noreferrer" className="underline">Repo</a></p>
+        <p>&copy; SonoTommy 2025 <a href="#" 
+                          onClick={e => { e.preventDefault(); window.api.openUrl("https://github.com/SonoTommy/PortLoc"); }} target="_blank" rel="noopener noreferrer" className="underline">Repo</a></p>
       </footer>
     </div>
   );
-  
+
 }
