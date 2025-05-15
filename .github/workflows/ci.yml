@@ -36,9 +36,15 @@ jobs:
 
       - name: Build renderer (Vite)
         run: npm run build:renderer
-
+        
       - name: Package with Electron Builder
-        run: npm run build
+        run: |
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            # build macOS arm64 senza firma
+            npm run build:renderer && npx electron-builder --mac --arm64 --skip-sign
+          else
+            npm run build
+          fi
         env:
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
