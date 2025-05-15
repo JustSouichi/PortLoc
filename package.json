@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "PortLoc - GUI per gestire semplici server HTTP locali",
   "main": "src/main/main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SonoTommy/PortLoc"
+  },
   "scripts": {
     "dev": "concurrently \"npm:dev:renderer\" \"npm:dev:electron\"",
     "dev:renderer": "vite",
@@ -48,8 +52,32 @@
       ]
     }
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+  "electron",
+  "vite",
+  "tailwind",
+  "http-server",
+  "local-server",
+  "localhost",
+  "desktop-app",
+  "port-manager",
+  "static-server",
+  "gui",
+  "file-sharing",
+  "web-server",
+  "file-hosting",
+  "http",
+  "developer-tools",
+  "productivity",
+  "server-manager",
+  "react",
+  "vite-electron",
+  "open-source"
+],
+  "author": {
+    "name": "SonoTommy",
+    "url": "https://github.com/SonoTommy"
+  },
   "license": "ISC",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
